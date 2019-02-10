@@ -176,16 +176,19 @@ public final class ReciprocalArraySum {
 
         ReciprocalArraySumTask[] tasks = new ReciprocalArraySumTask[numTasks];
 
-        for (int chunk = 0; chunk < numTasks; chunk++) {
-            tasks[chunk] = new ReciprocalArraySumTask(
-                    getChunkStartInclusive(chunk, numTasks, input.length),
-                    getChunkEndExclusive(chunk, numTasks, input.length),
+        for (int i = 0; i < numTasks; i++) {
+            tasks[i] = new ReciprocalArraySumTask(
+                    getChunkStartInclusive(i, numTasks, input.length),
+                    getChunkEndExclusive(i, numTasks, input.length),
                     input);
         }
-
-        ForkJoinTask.invokeAll(tasks);
-
-        for (int i = 0; i < numTasks; i++) {
+        for (int i = 1; i < numTasks; i++) {
+            tasks[i].fork();
+        }
+        tasks[0].compute();
+        sum += tasks[0].value;
+        for (int i = 1; i < numTasks; i++) {
+            tasks[i].join();
             sum += tasks[i].value;
         }
 
